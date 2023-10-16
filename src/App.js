@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import './style.css';
 
+const array_moveHistory = ["game start"];
+
 function Square({ value, onSquareClick, isWinning }) {
   const className = isWinning ? 'winning-square square' : 'square';
 
@@ -11,7 +13,7 @@ function Square({ value, onSquareClick, isWinning }) {
   );
 }
 
-function Board({ xIsNext, squares, onPlay, winnerSquares }) {
+function Board({ xIsNext, squares, onPlay, winnerSquares, handleSquareClick }) {
   function handleClick(i) {
     if (calculateWinner(squares) || squares[i]) {
       return;
@@ -23,6 +25,7 @@ function Board({ xIsNext, squares, onPlay, winnerSquares }) {
       nextSquares[i] = 'O';
     }
     onPlay(nextSquares);
+    handleSquareClick(i);
   }
 
   const winner = calculateWinner(squares);
@@ -62,7 +65,8 @@ function Game() {
   const [currentMove, setCurrentMove] = useState(0);
   const xIsNext = currentMove % 2 === 0;
   const currentSquares = history[currentMove];
-  const [isAscending, setIsAscending] = useState(true); // Track sorting order
+  const [isAscending, setIsAscending] = useState(true);
+
 
   function handlePlay(nextSquares) {
     const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
@@ -74,25 +78,28 @@ function Game() {
     setCurrentMove(nextMove);
   }
 
+  function handleSquareClick(value) {
+    const [row, col] = calculateRowCol(value);
+    array_moveHistory.push(`${row}, ${col}`);
+  }
 
   function toggleSortOrder() {
     setIsAscending(!isAscending);
   }
 
   const moves = history.map((squares, move) => {
-    const [row, col] = calculateRowCol(move);
-    const isCurrentMove = move === currentMove;
 
+    const isCurrentMove = move === currentMove;
     let description;
     if (move > 0) {
-      description = `Go to move #${move} (${row},${col})`;
+      description = `Go to move #${move} (${array_moveHistory[move]})`;
     } else {
       description = 'Go to game start';
     }
     return (
       <li key={move}>
         {isCurrentMove ? (
-          `You are at move #${move}`
+          `You are at move #${move} (${array_moveHistory[move]})`
         ) : (
           <button className="move-button" onClick={() => jumpTo(move)}>{description}</button>
         )}
@@ -117,6 +124,7 @@ function Game() {
             squares={currentSquares}
             onPlay={handlePlay}
             winnerSquares={winnerSquares}
+            handleSquareClick={handleSquareClick}
           />
         </div>
         <div className="game-info">
