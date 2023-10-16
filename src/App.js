@@ -62,6 +62,7 @@ function Game() {
   const [currentMove, setCurrentMove] = useState(0);
   const xIsNext = currentMove % 2 === 0;
   const currentSquares = history[currentMove];
+  const [isAscending, setIsAscending] = useState(true); // Track sorting order
 
   function handlePlay(nextSquares) {
     const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
@@ -73,18 +74,14 @@ function Game() {
     setCurrentMove(nextMove);
   }
 
-  function handleReset() {
-    setHistory([Array(9).fill(null)]);
-    setCurrentMove(0);
-    // Thiết lập trạng thái khác của game nếu cần
+
+  function toggleSortOrder() {
+    setIsAscending(!isAscending);
   }
-
-
-  const winner = calculateWinner(currentSquares);
-  const winnerSquares = winner ? getWinnerSquares(currentSquares, winner) : [];
 
   const moves = history.map((squares, move) => {
     const [row, col] = calculateRowCol(move);
+    const isCurrentMove = move === currentMove;
 
     let description;
     if (move > 0) {
@@ -94,16 +91,26 @@ function Game() {
     }
     return (
       <li key={move}>
-        <button className="move-button" onClick={() => jumpTo(move)}>{description}</button>
+        {isCurrentMove ? (
+          `You are at move #${move}`
+        ) : (
+          <button className="move-button" onClick={() => jumpTo(move)}>{description}</button>
+        )}
       </li>
     );
   });
+
+  const sortedMoves = isAscending ? [...moves] : [...moves].reverse();
+
+  const winner = calculateWinner(currentSquares);
+  const winnerSquares = winner ? getWinnerSquares(currentSquares, winner) : [];
+
+
 
   return (
     <>
       <div className="game-heading">CARO</div>
       <div className="game">
-
         <div className="game-board">
           <Board
             xIsNext={xIsNext}
@@ -113,12 +120,12 @@ function Game() {
           />
         </div>
         <div className="game-info">
-          <ol>{moves}</ol>
+          <button onClick={toggleSortOrder} className='sort-button'>
+            {isAscending ? 'Ascending' : 'Descending'}
+          </button>
+          <ol>{sortedMoves}</ol>
         </div>
 
-      </div>
-      <div className="play-again-container">
-        <button className="play-again-button" onClick={handleReset}>Chơi lại</button>
       </div>
     </>
   );
